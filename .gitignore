@@ -6,6 +6,7 @@ _ext
 atss.egg-info/
 build/
 dist/
+.DS_Store
 
 # pytorch/python/numpy formats
 *.pth
