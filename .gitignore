@@ -31,3 +31,5 @@ dist/
 /models
 /experiments
 /val2017
+/test1
+t.json
