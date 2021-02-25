@@ -1,3 +1,4 @@
+# dummy label(json) data
 import json
 
 l1 = {"images": [], "annotations": []}

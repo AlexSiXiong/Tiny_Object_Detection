@@ -1,3 +1,6 @@
+# convert the xml coordinates to json coordinates
+# so that COCO library can process them
+
 import json
 import pandas as pd
 import numpy as np

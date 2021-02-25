@@ -1,3 +1,4 @@
+# look at the data structure in the label (json) file
 import json
 
 with open('./val2017.json', 'r') as f:
