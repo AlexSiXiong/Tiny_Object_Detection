@@ -98,9 +98,9 @@ def xml_reader(path):
 
 
 def main():
-    image_path = '/Users/xiongsi/PycharmProjects/Tiny_Object_Detection/test1/'
+    image_path = '/test1/'
     xml_reader(image_path)
-    with open('./t.json', 'w') as f:
+    with open('../t.json', 'w') as f:
         json.dump(result, f, indent=4)
     print('Successfully converted xml to csv.')
 

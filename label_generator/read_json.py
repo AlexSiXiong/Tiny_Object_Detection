@@ -1,7 +1,7 @@
 # look at the data structure in the label (json) file
 import json
 
-with open('./val2017.json', 'r') as f:
+with open('../val2017.json', 'r') as f:
     dataset = json.load(f)
     if isinstance(dataset, dict):
 

@@ -38,7 +38,7 @@ def serialize_category_id_dic(original_ids):
 
 
 
-json_file = 'val2017.json'
+json_file = '../val2017.json'
 img_root = './val2017'
 coco = COCO(json_file)  # 读取json信息
 images = coco.getImgIds()  # 获取所有图片id
