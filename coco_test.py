@@ -58,7 +58,7 @@ for img_id in images:
     file_name = coco.loadImgs(ids=[img_id])[0]['file_name']  # 获取一张图片文件名
     img_path = os.path.join(img_root, file_name)  # 图片绝对路径
     # ann_ids =coco.getAnnIds(imgIds=[img_id])  #  获取这张图片下所有box的id
-    ann_ids = coco.getAnnIds(imgIds=img_info["id"], iscrowd=False)
+    ann_ids = coco.getAnnIds(imgIds=img_info["id"], iscrowd=None)
     anns = coco.loadAnns(ids=ann_ids)
 
     print(file_name)
