@@ -33,3 +33,5 @@ dist/
 /val2017
 /test1
 t.json
+
+net/Resnet.py
