@@ -5,6 +5,7 @@ import torch
 import torchvision
 from torch import nn
 from torch.nn import functional as F
+from SSD.utils.utils import multibox_prior
 
 
 def class_predictor(num_inputs, num_anchors, num_classes):
@@ -76,8 +77,72 @@ def net():
     num_filters = [3, 16, 32, 64]
 
     for i in range(len(num_filters) - 1):
-        block.append(down_sample_block(num_filters[i], num_filters[i+1]))
+        block.append(down_sample_block(num_filters[i], num_filters[i + 1]))
     return nn.Sequential(*block)
 
 
 print(forward(torch.zeros(2, 3, 256, 256), net()).shape)
+
+
+def get_pred_layers(i):
+    if i == 0:
+        block = net()
+    elif i == 1:
+        block = down_sample_block(64, 128)
+    elif i == 4:
+        block = nn.AdaptiveAvgPool2d((1, 1))
+    else:
+        block = down_sample_block(128, 128)
+    return block
+
+
+def block_forward(X, block, size, ratio, cls_predictor, bbox_predictor):
+    Y = block(X)
+    anchors = multibox_prior(Y, sizes=size, ratios=ratio)
+    cls_preds = cls_predictor(Y)
+    bbox_preds = bbox_predictor(Y)
+    return (Y, anchors, cls_preds, bbox_preds)
+
+
+sizes = [[0.2, 0.272], [0.37, 0.447], [0.54, 0.619], [0.71, 0.79],
+         [0.88, 0.961]]
+ratios = [[1, 2, 0.5]] * 5
+num_anchors = len(sizes[0]) + len(ratios[0]) - 1
+
+
+class TinySSD(nn.Module):
+    def __init__(self, num_classes, **kwargs):
+        super(TinySSD, self).__init__()
+        self.num_classes = num_classes
+        idx_to_in_channels = [64, 128, 128, 128, 128]
+        self.blocks = []
+        self.class_layers = []
+        self.bbox_layers = []
+        for i in range(5):
+            self.blocks.append(get_pred_layers(i))
+            self.class_layers.append(class_predictor(idx_to_in_channels[i], num_anchors, self.num_classes))
+            self.bbox_layers.append(bbox_predictor(idx_to_in_channels[i], num_anchors))
+
+    def forward(self, x):
+        anchors, cls_preds, bbox_preds = [None] * 5, [None] * 5, [None] * 5
+
+        for i in range(5):
+            x, anchors[i], cls_preds[i], bbox_preds[i] = block_forward(x, self.blocks[i], sizes[i], ratios[i],
+                                                                       self.class_layers[i], self.bbox_layers[i])
+
+        anchors = torch.cat(anchors, dim=1)
+        cls_preds = concat_pred(cls_preds)
+        bbox_preds = concat_pred(bbox_preds)
+
+        cls_preds = cls_preds.reshape(cls_preds.shape[0], -1, self.num_classes + 1)
+
+        return anchors, cls_preds, bbox_preds
+
+
+net = TinySSD(num_classes=1)
+X = torch.zeros((32, 3, 256, 256))
+anchors, cls_preds, bbox_preds = net(X)
+
+print('output anchors:', anchors.shape)
+print('output class preds:', cls_preds.shape)
+print('output bbox preds:', bbox_preds.shape)
