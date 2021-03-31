@@ -1,4 +1,6 @@
 import torch
+import os
+import pandas as pd
 
 
 def multibox_prior(data, sizes, ratios):
@@ -23,8 +25,8 @@ def multibox_prior(data, sizes, ratios):
     # used to create anchor box corner coordinates (xmin, xmax, ymin, ymax)
     # cat (various sizes, first ratio) and (first size, various ratios)
     w = torch.cat((size_tensor * torch.sqrt(ratio_tensor[0]),
-                   sizes[0] * torch.sqrt(ratio_tensor[1:])))\
-                   * in_height / in_width  # handle rectangular inputs
+                   sizes[0] * torch.sqrt(ratio_tensor[1:]))) \
+        * in_height / in_width  # handle rectangular inputs
     h = torch.cat((size_tensor / torch.sqrt(ratio_tensor[0]),
                    sizes[0] / torch.sqrt(ratio_tensor[1:])))
     # Divide by 2 to get half height and half width
@@ -38,3 +40,16 @@ def multibox_prior(data, sizes, ratios):
 
     output = out_grid + anchor_manipulations
     return output.unsqueeze(0)
+
+
+def read_data_bananas(is_train=True):
+    data_dir = '../../banana'
+    csv_fname = os.path.join(data_dir, 'bananas_train' if is_train else 'bananas_val', 'label.csv')
+    csv_data = pd.read_csv(csv_fname)
+    csv_data = csv_data.set_index('img_name')
+    print(csv_data.head())
+    images, targets = [], []
+    return images, torch.tensor(targets).unsqueeze(1) / 256
+
+
+read_data_bananas(False)
